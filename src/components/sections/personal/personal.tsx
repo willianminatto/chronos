@@ -6,7 +6,7 @@ import { StructuralLine } from "@/components/visual/structural-line";
 import { TechnicalLabel } from "@/components/visual/technical-label";
 import { eras } from "@/data/eras";
 import { COMPACT_SIGNAL_LINE, EASE } from "@/lib/motion/config";
-import { gsap, useGSAP } from "@/lib/motion/gsap";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/motion/gsap";
 import { MOTION_CONDITIONS } from "@/lib/motion/media-queries";
 import { resolveSignalChain } from "@/lib/motion/signal";
 import "./personal.css";
@@ -46,7 +46,9 @@ const GLYPH_PATH = GLYPH.flatMap((row, y) =>
 const TEXT_LINES = [0.9, 0.7, 0.82, 0.4, 0.62];
 
 /** Scroll distance of the pinned desktop sequence, relative to the viewport. */
-const PIN_DISTANCE = "+=160%";
+const PIN_DISTANCE = "+=130%";
+/** The pin, plus the viewport the section enters through and the one it leaves by. */
+const LIVE_DISTANCE = "+=330%";
 /** Stepped easing: the interface is assembled cell by cell, it does not glide. */
 const ASSEMBLE = "steps(6)";
 
@@ -89,6 +91,13 @@ export function Personal() {
           { target: exit, length: exit.offsetHeight },
         ];
 
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top bottom",
+          end: conditions.desktop ? LIVE_DISTANCE : "bottom top",
+          toggleClass: { targets: section, className: "is-live" },
+        });
+
         if (!conditions.desktop) {
           gsap
             .timeline({
@@ -100,10 +109,10 @@ export function Personal() {
               },
             })
             .add(
-              resolveSignalChain([
-                { target: entry, length: entry.offsetHeight },
-                ...path,
-              ]),
+              resolveSignalChain(
+                [{ target: entry, length: entry.offsetHeight }, ...path],
+                { waits: true },
+              ),
             );
 
           gsap
@@ -242,6 +251,7 @@ export function Personal() {
         data-signal-pending
         orientation="vertical"
         track={false}
+        ends={false}
         relay
         className="personal-entry"
       />
@@ -250,6 +260,7 @@ export function Personal() {
         data-signal-pending
         orientation="vertical"
         track={false}
+        ends={false}
         relay
         className="personal-exit"
       />
@@ -287,7 +298,6 @@ export function Personal() {
           />
           <StructuralLine
             data-personal="rule"
-            tone="strong"
             className="flex-1"
           />
         </div>
@@ -366,7 +376,7 @@ export function Personal() {
           data-personal="statement"
           className="personal-statement text-heading font-semibold font-stretch-[125%] uppercase"
         >
-          Computing becomes personal.
+          {personal.statement}
           <span aria-hidden data-personal="cursor" className="personal-cursor" />
         </p>
         <SignalLine

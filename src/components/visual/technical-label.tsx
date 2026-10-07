@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "react";
 interface TechnicalLabelProps extends HTMLAttributes<HTMLElement> {
   as?: "span" | "p";
   size?: "technical" | "micro";
-  tone?: "muted" | "foreground" | "accent";
+  tone?: "muted" | "foreground";
 }
 
 const SIZE_CLASSES = {
@@ -14,7 +14,6 @@ const SIZE_CLASSES = {
 const TONE_CLASSES = {
   muted: "text-muted",
   foreground: "text-foreground",
-  accent: "text-accent",
 } as const;
 
 /** Monospaced metadata: dates, indices, identifiers, states. Real text. */

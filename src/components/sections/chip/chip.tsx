@@ -72,7 +72,7 @@ const TERMINAL_CELLS = MATRIX_COLUMNS.map((x) => ({ x, y: 520 }));
 const PAD_CELLS = [180, ...MATRIX_COLUMNS, 400].map((x) => ({ x, y: 540 }));
 
 /** Scroll distance of the pinned desktop sequence, relative to the viewport. */
-const PIN_DISTANCE = "+=180%";
+const PIN_DISTANCE = "+=160%";
 /** Stepped easing: parts snap into cells instead of gliding. */
 const SNAP = "steps(4)";
 
@@ -126,11 +126,14 @@ export function Chip() {
               scrub: true,
             },
           }).add(
-            resolveSignalChain([
-              { target: side, length: side.offsetHeight },
-              { target: jog, length: jog.offsetWidth },
-              { target: drawing, length: SIGNAL_LENGTH * unit },
-            ]),
+            resolveSignalChain(
+              [
+                { target: side, length: side.offsetHeight },
+                { target: jog, length: jog.offsetWidth },
+                { target: drawing, length: SIGNAL_LENGTH * unit },
+              ],
+              { waits: true },
+            ),
           );
 
           gsap.timeline({
@@ -244,12 +247,13 @@ export function Chip() {
             {
               "--signal-progress": 1,
               ease: EASE.linear,
-              duration: 0.32,
+              duration: 0.48,
               immediateRender: false,
             },
             0.5,
           )
-          // The circuit lets go of its traces and settles into a matrix.
+          // The circuit lets go of its traces and settles into a matrix,
+          // while the signal is still on its way out.
           .to(traces, { strokeDashoffset: 1, duration: 0.06 }, 0.84)
           .fromTo(
             "[data-chip='mesh']",
@@ -304,6 +308,7 @@ export function Chip() {
           data-signal-pending
           orientation="vertical"
           track={false}
+          ends={false}
           relay
           className="absolute top-0 -bottom-1 left-frame -translate-x-1/2 lg:hidden"
         />
@@ -313,7 +318,7 @@ export function Chip() {
           </TechnicalLabel>
           <TechnicalLabel data-chip="copy">{chip.period}</TechnicalLabel>
         </div>
-        <StructuralLine tone="strong" className="-mx-rail lg:hidden" />
+        <StructuralLine className="-mx-rail lg:hidden" />
 
         <div className="@container pt-block lg:pt-0">
           <h2
@@ -330,16 +335,15 @@ export function Chip() {
           </h2>
         </div>
 
-        <div className="grid gap-y-meta pt-block lg:max-w-[22rem] lg:pt-meta">
+        <div className="grid gap-y-meta pt-block lg:max-w-[16rem] lg:pt-meta xl:max-w-[22rem]">
           <p
             data-chip="copy"
             className="text-heading font-semibold font-stretch-[125%] uppercase lg:text-xl xl:text-2xl"
           >
-            Miniaturization.
+            {chip.statement}
           </p>
           <p data-chip="copy" className="max-w-[38ch] text-body text-muted">
-            Circuits that once filled cabinets were integrated onto a single
-            piece of silicon.
+            {chip.detail}
           </p>
         </div>
       </div>

@@ -37,7 +37,7 @@ const TOKEN_POSITIONS = TOKENS.map(
 );
 
 /** One pin for both chapters, relative to the viewport. */
-const PIN_DISTANCE = "+=320%";
+const PIN_DISTANCE = "+=290%";
 
 /* Fractions of the pinned scroll range. */
 const MORPH = { wide: 0.06, medium: 0.2, hand: 0.32, duration: 0.1 };
@@ -110,15 +110,18 @@ export function Ambient() {
               },
             })
             .add(
-              resolveSignalChain([
-                { target: pass, length: pass.offsetHeight },
-                { target: entry, length: entry.offsetHeight },
-                {
-                  target: border,
-                  length: frame.offsetHeight + frame.offsetWidth / 2,
-                },
-                { target: exit, length: exit.offsetHeight },
-              ]),
+              resolveSignalChain(
+                [
+                  { target: pass, length: pass.offsetHeight },
+                  { target: entry, length: entry.offsetHeight },
+                  {
+                    target: border,
+                    length: frame.offsetHeight + frame.offsetWidth / 2,
+                  },
+                  { target: exit, length: exit.offsetHeight },
+                ],
+                { waits: true },
+              ),
             );
 
           // The boundaries appear from the widest to the narrowest.
@@ -145,12 +148,15 @@ export function Ambient() {
               },
             })
             .add(
-              resolveSignalChain([
-                { target: head, length: head.offsetHeight },
-                { target: fanOut, length: fanOut.clientHeight },
-                { target: fanIn, length: fanIn.clientHeight },
-                { target: tail, length: tail.offsetHeight },
-              ]),
+              resolveSignalChain(
+                [
+                  { target: head, length: head.offsetHeight },
+                  { target: fanOut, length: fanOut.clientHeight },
+                  { target: fanIn, length: fanIn.clientHeight },
+                  { target: tail, length: tail.offsetHeight },
+                ],
+                { waits: true },
+              ),
             );
 
           gsap.from(all("fragment"), {
@@ -408,6 +414,7 @@ export function Ambient() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="absolute inset-y-0 left-1/2 -translate-x-1/2 lg:hidden"
           />
@@ -422,7 +429,7 @@ export function Ambient() {
               {everywhere.period}
             </TechnicalLabel>
           </div>
-          <StructuralLine tone="strong" className="-mx-rail lg:hidden" />
+          <StructuralLine className="-mx-rail lg:hidden" />
           <div className="ambient-everywhere__bottom">
             <div className="ambient-solid @container overflow-y-clip">
               <h2
@@ -438,7 +445,7 @@ export function Ambient() {
               data-ambient="copy"
               className="ambient-solid text-heading font-semibold font-stretch-[125%] uppercase lg:max-w-[44rem] lg:text-xl"
             >
-              Computing stopped being somewhere. It became everywhere.
+              {everywhere.statement}
             </p>
           </div>
         </div>
@@ -449,6 +456,7 @@ export function Ambient() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="ambient-entry"
           />
@@ -481,6 +489,7 @@ export function Ambient() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="ambient-exit"
           />
@@ -490,6 +499,7 @@ export function Ambient() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="ambient-descent"
           />
@@ -508,6 +518,7 @@ export function Ambient() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="absolute inset-y-0 left-1/2 -translate-x-1/2"
           />
@@ -576,6 +587,7 @@ export function Ambient() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="absolute inset-y-0 left-1/2 -translate-x-1/2"
           />
@@ -583,8 +595,7 @@ export function Ambient() {
             data-ambient="copy"
             className="ambient-solid max-w-[38ch] text-body text-muted"
           >
-            Software starts to work with language, images, code and sound as
-            patterns it can relate and recombine.
+            {intelligence.detail}
           </p>
         </div>
       </section>

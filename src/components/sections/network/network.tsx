@@ -28,15 +28,16 @@ const WEB_FIT = { "--fit": 1.52 };
 const ALWAYS_ON_FIT = { "--fit": 2.66 };
 
 /** One pin for both chapters, relative to the viewport. */
-const PIN_DISTANCE = "+=300%";
+const PIN_DISTANCE = "+=270%";
 /** The pin, plus the viewport the stage enters through and the one it leaves by. */
-const LIVE_DISTANCE = "+=500%";
+const LIVE_DISTANCE = "+=470%";
 
 /* Fractions of the pinned scroll range. */
 const WAVE_START = 0.05;
 const WAVE_STEP = 0.075;
 const HANDOVER = 0.45;
-const CONVERGE = 0.8;
+const CONVERGE = 0.76;
+const EXIT = CONVERGE + 0.1;
 
 const formatIndex = (index: number) => String(index).padStart(2, "0");
 
@@ -99,13 +100,16 @@ export function Network() {
                 },
               })
               .add(
-                resolveSignalChain([
-                  { target: pass, length: pass.offsetHeight },
-                  {
-                    target: drawing,
-                    length: (ROUTE_LENGTH * drawing.clientWidth) / DRAWING,
-                  },
-                ]),
+                resolveSignalChain(
+                  [
+                    { target: pass, length: pass.offsetHeight },
+                    {
+                      target: drawing,
+                      length: (ROUTE_LENGTH * drawing.clientWidth) / DRAWING,
+                    },
+                  ],
+                  { waits: true },
+                ),
               );
           });
 
@@ -312,12 +316,12 @@ export function Network() {
             },
             CONVERGE,
           )
-          .set(within("[data-network='exit']"), { visibility: "visible" }, 0.94)
+          .set(within("[data-network='exit']"), { visibility: "visible" }, EXIT)
           .fromTo(
             graph,
             { "--network-exit": 0 },
-            { "--network-exit": 1, ease: EASE.linear, duration: 0.06 },
-            0.94,
+            { "--network-exit": 1, ease: EASE.linear, duration: 0.1 },
+            EXIT,
           );
 
         return () => {
@@ -344,6 +348,7 @@ export function Network() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="absolute inset-y-0 left-1/2 -translate-x-1/2 lg:hidden"
           />
@@ -353,7 +358,7 @@ export function Network() {
             </TechnicalLabel>
             <TechnicalLabel data-network="meta">{web.period}</TechnicalLabel>
           </div>
-          <StructuralLine tone="strong" className="-mx-rail lg:hidden" />
+          <StructuralLine className="-mx-rail lg:hidden" />
           <div className="network-title-box @container mt-block lg:mt-0">
             <h2
               id="web-title"
@@ -366,11 +371,10 @@ export function Network() {
           </div>
           <div data-network="copy" className="network-copy">
             <p className="text-heading font-semibold font-stretch-[125%] uppercase lg:text-xl">
-              Computers become connected.
+              {web.statement}
             </p>
             <p className="max-w-[38ch] text-body text-muted">
-              Isolated machines became addressable points on one shared
-              network.
+              {web.detail}
             </p>
           </div>
         </div>
@@ -391,6 +395,7 @@ export function Network() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="absolute inset-y-0 left-1/2 -translate-x-1/2 lg:hidden"
           />
@@ -401,7 +406,7 @@ export function Network() {
             </TechnicalLabel>
             <TechnicalLabel data-network="meta">{alwaysOn.period}</TechnicalLabel>
           </div>
-          <StructuralLine tone="strong" className="-mx-rail lg:hidden" />
+          <StructuralLine className="-mx-rail lg:hidden" />
           <div className="network-title-box @container mt-block lg:mt-0">
             <h2
               id="always-on-title"
@@ -416,10 +421,10 @@ export function Network() {
           </div>
           <div data-network="copy" className="network-copy">
             <p className="text-heading font-semibold font-stretch-[125%] uppercase lg:text-xl">
-              Connection becomes persistent.
+              {alwaysOn.statement}
             </p>
             <p className="max-w-[38ch] text-body text-muted">
-              Going online stopped being an event. The link stayed open.
+              {alwaysOn.detail}
             </p>
           </div>
         </div>

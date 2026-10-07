@@ -4,10 +4,16 @@ import { useRef } from "react";
 import { SignalLine } from "@/components/visual/signal-line";
 import { TechnicalGrid } from "@/components/visual/technical-grid";
 import { TechnicalLabel } from "@/components/visual/technical-label";
-import { eras } from "@/data/eras";
-import { DURATION, EASE, STAGGER } from "@/lib/motion/config";
+import { eras, TIMELINE } from "@/data/eras";
+import {
+  COMPACT_SIGNAL_LINE,
+  DURATION,
+  EASE,
+  STAGGER,
+} from "@/lib/motion/config";
 import { gsap, useGSAP } from "@/lib/motion/gsap";
 import { MOTION_CONDITIONS } from "@/lib/motion/media-queries";
+import { resolveSignalChain } from "@/lib/motion/signal";
 
 /**
  * Width in em of the widest line of the question, at the compressed width
@@ -26,14 +32,20 @@ const TITLE_FIT = {
  */
 const PRESENT = 2 / 3;
 
-/** Provisional editorial bounds, the same ones the Intro opens with. */
-const AXIS = { start: "1940", present: "2026", next: "?" };
 
 const formatIndex = (index: number) => String(index).padStart(2, "0");
 
 const finale = eras[8];
 
-const restart = () => window.scrollTo({ top: 0, behavior: "instant" });
+/**
+ * Back to the first chapter. The jump is instant for everyone: an animated
+ * scroll would replay every pinned sequence in reverse. Focus follows, so
+ * keyboard and screen reader users restart from the title too.
+ */
+const restart = () => {
+  window.scrollTo({ top: 0, behavior: "instant" });
+  document.getElementById("chronos-title")?.focus({ preventScroll: true });
+};
 
 /**
  * Chapter 08 mirrors the Intro: a question on the bottom edge and a time
@@ -55,21 +67,30 @@ export function Finale() {
 
         gsap.set("[data-reveal]", { visibility: "visible" });
 
-        // The signal lands on the axis as the section settles.
-        gsap.fromTo(
+        const arrival = section.querySelector<HTMLElement>(
           "[data-finale='arrival']",
-          { "--signal-progress": 0 },
-          {
-            "--signal-progress": 1,
-            ease: EASE.linear,
+        );
+        if (!arrival) return;
+
+        // The signal lands on the axis as the section settles. On compact
+        // screens it starts where the previous chapter's signal ends.
+        gsap
+          .timeline({
             scrollTrigger: {
               trigger: section,
-              start: "top bottom",
+              start: conditions.desktop
+                ? "top bottom"
+                : `top ${COMPACT_SIGNAL_LINE}`,
               end: "bottom bottom",
               scrub: true,
             },
-          },
-        );
+          })
+          .add(
+            resolveSignalChain(
+              [{ target: arrival, length: arrival.offsetHeight }],
+              { waits: !conditions.desktop },
+            ),
+          );
 
         gsap
           .timeline({
@@ -80,17 +101,36 @@ export function Finale() {
               toggleActions: "play none none reverse",
             },
           })
-          .fromTo(
-            "[data-finale='axis']",
-            { "--signal-progress": 0 },
-            { "--signal-progress": PRESENT, ease: EASE.expressive },
-            0,
-          )
-          .from("[data-reveal='title']", { yPercent: 100 }, 0.2)
+          .from("[data-reveal='title']", { yPercent: 100 }, 0)
           .from(
             "[data-reveal='meta']",
             { opacity: 0, duration: DURATION.short, stagger: STAGGER.small },
-            0.5,
+            0.3,
+          );
+
+        // Once the signal has landed, at the end of the page, the axis
+        // resolves up to it. Its head stays hidden until then.
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: section,
+              start: "bottom bottom+=2",
+              toggleActions: "play none none reverse",
+            },
+          })
+          .fromTo(
+            "[data-finale='axis'] [data-signal-head]",
+            { visibility: "hidden" },
+            { visibility: "inherit", duration: 0.01 },
+          )
+          .fromTo(
+            "[data-finale='axis']",
+            { "--signal-progress": 0 },
+            {
+              "--signal-progress": PRESENT,
+              ease: EASE.expressive,
+              duration: DURATION.reveal,
+            },
           );
       });
     },
@@ -111,6 +151,7 @@ export function Finale() {
           data-signal-pending
           orientation="vertical"
           track={false}
+          ends={false}
           relay
           className="absolute top-0 -bottom-1 left-1/2 -translate-x-1/2"
         />
@@ -140,17 +181,17 @@ export function Finale() {
         </div>
         <div className="chronos-grid pt-meta">
           <TechnicalLabel data-reveal="meta" className="col-span-2 lg:col-span-6">
-            {AXIS.start}
+            {TIMELINE.start}
           </TechnicalLabel>
           <TechnicalLabel
             data-reveal="meta"
             tone="foreground"
             className="lg:col-span-3"
           >
-            {AXIS.present}
+            {TIMELINE.present}
           </TechnicalLabel>
           <TechnicalLabel data-reveal="meta" className="col-start-4 lg:col-start-10">
-            {AXIS.next}
+            ?
           </TechnicalLabel>
         </div>
 

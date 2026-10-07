@@ -23,17 +23,17 @@
   /* Page edge to the outer grid line. */
   --chronos-frame: calc(var(--chronos-gutter) - var(--chronos-grid-rail));
   --chronos-grid-columns: 4;
-  /* Columns between two visible lines of a sparse TechnicalGrid. */
-  --chronos-grid-sparse-step: 2;
+  /* Columns between two visible lines of the TechnicalGrid. */
+  --chronos-grid-step: 2;
 
   color-scheme: dark;
 }
 
-/* Matches Tailwind's `lg` and MOTION_QUERIES.desktop. */
+/* Matches Tailwind's `lg` and MOTION_CONDITIONS.desktop. */
 @media (min-width: 64rem) {
   :root {
     --chronos-grid-columns: 12;
-    --chronos-grid-sparse-step: 3;
+    --chronos-grid-step: 3;
   }
 }
 
@@ -74,9 +74,6 @@
   --spacing-frame: var(--chronos-frame);
   --spacing-meta: 0.75rem;
   --spacing-block: clamp(1.5rem, 3.5vw, 3.5rem);
-
-  /* CSS counterpart of EASE.expressive in src/lib/motion/config.ts. */
-  --ease-expressive: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 /* Box sizing and margin resets come from Tailwind's preflight. */
@@ -131,8 +128,6 @@
    * draws a line before every nth column, the second closes the right edge.
    */
   .technical-grid {
-    --technical-grid-step: var(--chronos-grid-sparse-step);
-
     position: absolute;
     inset-block: 0;
     inset-inline: var(--chronos-frame);
@@ -141,16 +136,12 @@
       linear-gradient(to right, var(--chronos-line) 1px, transparent 1px),
       linear-gradient(var(--chronos-line), var(--chronos-line));
     background-size:
-      calc(100% / var(--chronos-grid-columns) * var(--technical-grid-step)) 100%,
+      calc(100% / var(--chronos-grid-columns) * var(--chronos-grid-step)) 100%,
       1px 100%;
     background-position:
       0 0,
       100% 0;
     background-repeat: repeat-x, no-repeat;
-  }
-
-  .technical-grid[data-density="full"] {
-    --technical-grid-step: 1;
   }
 
   /*
@@ -161,7 +152,6 @@
    */
   .signal-line {
     --signal-node: 0.5rem;
-    --signal-pulse: 1.5rem;
 
     position: relative;
     height: var(--signal-node);
@@ -169,8 +159,7 @@
   }
 
   .signal-line__track,
-  .signal-line__trace,
-  .signal-line__pulse {
+  .signal-line__trace {
     position: absolute;
     top: calc(50% - 0.5px);
     left: 0;
@@ -261,20 +250,6 @@
   .signal-line--vertical .signal-line__node--head {
     translate: 0 calc(var(--signal-progress) * 100cqb);
   }
-
-  .signal-line__pulse {
-    display: none;
-    width: var(--signal-pulse);
-    background-color: var(--chronos-accent);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .signal-line__pulse {
-      display: block;
-      opacity: 0;
-      animation: signal-pulse 4.8s var(--ease-expressive) infinite;
-    }
-  }
 }
 
 /*
@@ -285,24 +260,5 @@
 @layer utilities {
   .text-fit {
     font-size: calc(100cqi / var(--fit));
-  }
-}
-
-/* Travels the resolved trace once, then rests for the second half of the loop. */
-@keyframes signal-pulse {
-  0% {
-    opacity: 0;
-    translate: 0 0;
-  }
-  8% {
-    opacity: 1;
-  }
-  42% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
-    translate: calc(var(--signal-progress) * 100cqi - var(--signal-pulse)) 0;
   }
 }

@@ -5,7 +5,7 @@ import { SignalLine } from "@/components/visual/signal-line";
 import { StructuralLine } from "@/components/visual/structural-line";
 import { TechnicalGrid } from "@/components/visual/technical-grid";
 import { TechnicalLabel } from "@/components/visual/technical-label";
-import { eras } from "@/data/eras";
+import { eras, TIMELINE } from "@/data/eras";
 import { COMPACT_SIGNAL_LINE, EASE } from "@/lib/motion/config";
 import { gsap, useGSAP } from "@/lib/motion/gsap";
 import { offsetWithin } from "@/lib/motion/layout";
@@ -22,7 +22,7 @@ const TITLE_FIT = {
 };
 
 /** Scroll distance of the pinned desktop sequence, relative to the viewport. */
-const PIN_DISTANCE = "+=130%";
+const PIN_DISTANCE = "+=120%";
 
 const formatIndex = (index: number) => String(index).padStart(2, "0");
 
@@ -142,10 +142,10 @@ export function Intro() {
 
         <div className="chronos-grid pb-meta">
           <TechnicalLabel className="col-span-3 lg:col-span-9">
-            1940
+            {TIMELINE.start}
           </TechnicalLabel>
           <TechnicalLabel className="col-start-4 lg:col-start-10">
-            2026
+            {TIMELINE.present}
           </TechnicalLabel>
         </div>
 
@@ -162,6 +162,7 @@ export function Intro() {
             data-signal-pending
             orientation="vertical"
             track={false}
+            ends={false}
             relay
             className="absolute top-1 bottom-0 left-frame -translate-x-1/2"
           />
@@ -169,6 +170,8 @@ export function Intro() {
           <div className="px-gutter pt-meta">
             <div className="@container">
               <h1
+                id="chronos-title"
+                tabIndex={-1}
                 data-intro="title"
                 className="-ml-[0.04em] text-fit text-massive whitespace-nowrap uppercase [--fit:var(--fit-compressed)] font-stretch-[62%] lg:[--fit:var(--fit-extended)] lg:font-stretch-[125%]"
                 style={TITLE_FIT}
@@ -193,12 +196,12 @@ export function Intro() {
             </TechnicalLabel>
           </div>
         </div>
-        <StructuralLine data-reveal="line" tone="strong" className="-mx-rail" />
+        <StructuralLine data-reveal="line" className="-mx-rail" />
       </div>
 
       <div className="chronos-grid relative row-start-2 content-start pt-block">
         <p className="col-span-full text-display font-medium font-stretch-[62%] text-balance uppercase lg:col-start-4 xl:col-start-7">
-          An interactive history of computing
+          {intro.statement}
         </p>
       </div>
     </section>

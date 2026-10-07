@@ -9,6 +9,7 @@ import { eras } from "@/data/eras";
 import { COMPACT_SIGNAL_LINE, DURATION, EASE } from "@/lib/motion/config";
 import { gsap, useGSAP } from "@/lib/motion/gsap";
 import { MOTION_CONDITIONS } from "@/lib/motion/media-queries";
+import { resolveSignalChain } from "@/lib/motion/signal";
 import "./machine.css";
 
 /** Width of "MACHINE" in em, measured the same way as the Intro title. */
@@ -21,7 +22,7 @@ const UNIT_VARIANTS = ["tubes", "mesh", "tubes", "slots", "tubes", "mesh"];
 const WALL_STYLE = { "--machine-units": UNIT_VARIANTS.length };
 
 /** Scroll distance of the pinned desktop sequence, relative to the viewport. */
-const PIN_DISTANCE = "+=220%";
+const PIN_DISTANCE = "+=190%";
 /** The wall is first seen this much larger than it is: structure before object. */
 const WALL_ZOOM = 2.6;
 /** Final scale of the wall, as it starts to shrink toward the next era. */
@@ -53,35 +54,26 @@ export function Machine() {
         const lit = gsap.utils.toArray<HTMLElement>("[data-machine='lit']");
 
         if (!conditions.desktop) {
-          // The spine has no head until the Intro's signal reaches it.
-          gsap.fromTo(
-            "[data-machine='spine'] [data-signal-head]",
-            { visibility: "hidden" },
-            {
-              visibility: "inherit",
-              duration: 0,
-              scrollTrigger: {
-                trigger: "[data-machine='spine']",
-                start: `top ${COMPACT_SIGNAL_LINE}`,
-                toggleActions: "play none none reverse",
-              },
-            },
-          );
-
-          gsap.fromTo(
+          const spine = section.querySelector<HTMLElement>(
             "[data-machine='spine']",
-            { "--signal-progress": 0 },
-            {
-              "--signal-progress": 1,
-              ease: EASE.linear,
+          );
+          if (!spine) return;
+
+          gsap
+            .timeline({
               scrollTrigger: {
-                trigger: "[data-machine='spine']",
+                trigger: spine,
                 start: `top ${COMPACT_SIGNAL_LINE}`,
                 end: `bottom ${COMPACT_SIGNAL_LINE}`,
                 scrub: true,
               },
-            },
-          );
+            })
+            .add(
+              resolveSignalChain(
+                [{ target: spine, length: spine.offsetHeight }],
+                { waits: true },
+              ),
+            );
 
           lit.forEach((layer) => {
             gsap.fromTo(
@@ -134,6 +126,13 @@ export function Machine() {
 
         const signalStart = 0.4;
         const signalDuration = 0.3;
+        const exitStart = 0.9;
+
+        // A relay head hides as soon as its segment resolves. Here the next
+        // segment starts later, so each head waits at its end until then.
+        const dropHead = "[data-machine='drop'] [data-signal-head]";
+        const busHead = "[data-machine='bus'] [data-signal-head]";
+        gsap.set([dropHead, busHead], { opacity: 1 });
 
         timeline
           .fromTo(
@@ -170,8 +169,9 @@ export function Machine() {
             0.36,
           )
           // The bus has no head until the signal turns into it.
+          .set(dropHead, { visibility: "hidden" }, signalStart)
           .fromTo(
-            "[data-machine='bus'] [data-signal-head]",
+            busHead,
             { visibility: "hidden" },
             { visibility: "inherit", ease: EASE.linear, duration: 0.01 },
             signalStart,
@@ -205,17 +205,18 @@ export function Machine() {
             { "--machine-scale": WALL_COMPRESSED, duration: 0.18 },
             0.72,
           )
+          .set(busHead, { visibility: "hidden" }, exitStart)
           .fromTo(
             "[data-machine='exit'] [data-signal-head]",
             { visibility: "hidden" },
             { visibility: "inherit", ease: EASE.linear, duration: 0.01 },
-            0.9,
+            exitStart,
           )
           .fromTo(
             "[data-machine='exit']",
             { "--signal-progress": 0 },
             { "--signal-progress": 1, ease: EASE.linear, duration: 0.1 },
-            0.9,
+            exitStart,
           );
       });
     },
@@ -234,6 +235,7 @@ export function Machine() {
         data-signal-pending
         orientation="vertical"
         track={false}
+        ends={false}
         relay
         className="absolute inset-y-0 left-frame -translate-x-1/2 lg:hidden"
       />
@@ -254,7 +256,7 @@ export function Machine() {
           </TechnicalLabel>
           <TechnicalLabel data-machine="meta">{machine.period}</TechnicalLabel>
         </div>
-        <StructuralLine data-machine="line" tone="strong" className="-mx-rail" />
+        <StructuralLine data-machine="line" className="-mx-rail" />
         <div className="@container overflow-y-clip pt-block lg:order-last lg:pt-meta">
           <h2
             id="machine-title"
@@ -270,14 +272,13 @@ export function Machine() {
             data-machine="copy"
             className="text-heading font-semibold font-stretch-[125%] uppercase lg:col-span-6"
           >
-            Computation becomes physical.
+            {machine.statement}
           </p>
           <p
             data-machine="copy"
             className="max-w-[38ch] text-body text-muted lg:col-span-4 lg:col-start-7"
           >
-            The first electronic computers filled entire rooms and switched
-            with thousands of vacuum tubes.
+            {machine.detail}
           </p>
         </div>
       </div>
@@ -288,6 +289,7 @@ export function Machine() {
           data-signal-pending
           orientation="vertical"
           track={false}
+          ends={false}
           relay
           className="absolute top-0 left-0 h-block -translate-x-1/2 max-lg:hidden"
         />

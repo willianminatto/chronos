@@ -1,26 +1,14 @@
 import type { ComponentProps } from "react";
 
-interface TechnicalGridProps
-  extends Omit<ComponentProps<"div">, "children" | "aria-hidden"> {
-  /** `sparse` shows the main divisions only; `full` shows every column. */
-  density?: "sparse" | "full";
-}
+type TechnicalGridProps = Omit<
+  ComponentProps<"div">,
+  "children" | "aria-hidden"
+>;
 
 /**
- * Decorative overlay that makes the layout grid visible. Fills its nearest
- * positioned ancestor and aligns with `.chronos-grid` columns.
+ * Decorative overlay that shows the main divisions of the layout grid. Fills
+ * its nearest positioned ancestor and aligns with `.chronos-grid` columns.
  */
-export function TechnicalGrid({
-  density = "sparse",
-  className = "",
-  ...props
-}: TechnicalGridProps) {
-  return (
-    <div
-      {...props}
-      aria-hidden
-      data-density={density}
-      className={`technical-grid ${className}`}
-    />
-  );
+export function TechnicalGrid({ className = "", ...props }: TechnicalGridProps) {
+  return <div {...props} aria-hidden className={`technical-grid ${className}`} />;
 }

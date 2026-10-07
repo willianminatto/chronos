@@ -10,15 +10,15 @@ interface SignalLineProps
   track?: boolean;
   /** Draws the accent node at the leading end of the trace. */
   head?: boolean;
+  /** Draws the origin and terminal nodes. Off for plain connecting runs. */
+  ends?: boolean;
   /** Hides the head once fully resolved, because another segment continues. */
   relay?: boolean;
-  /** Sends a recurring pulse along a horizontal trace. Off under reduced motion. */
-  pulse?: boolean;
 }
 
 /**
- * One straight segment of the Persistent Signal, with an origin and a
- * terminal node. Decorative. To animate it, tween `--signal-progress` on the
+ * One straight segment of the Persistent Signal, by default with an origin
+ * and a terminal node. Decorative. To animate it, tween `--signal-progress` on the
  * root element.
  */
 export function SignalLine({
@@ -26,8 +26,8 @@ export function SignalLine({
   progress,
   track = true,
   head = true,
+  ends = true,
   relay = false,
-  pulse = false,
   className = "",
   style,
   ...props
@@ -48,9 +48,12 @@ export function SignalLine({
     >
       {track ? <span className="signal-line__track" /> : null}
       <span className="signal-line__trace" />
-      {pulse && !vertical ? <span className="signal-line__pulse" /> : null}
-      <span className="signal-line__node" />
-      <span className="signal-line__node signal-line__node--terminal" />
+      {ends ? (
+        <>
+          <span className="signal-line__node" />
+          <span className="signal-line__node signal-line__node--terminal" />
+        </>
+      ) : null}
       {head ? (
         <span
           data-signal-head

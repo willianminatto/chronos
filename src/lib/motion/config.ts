@@ -17,8 +17,6 @@ export const EASE = {
 export const DURATION = {
   /** Small state changes: labels, markers. */
   short: 0.5,
-  /** Moves between two states. */
-  transition: 0.9,
   /** Large elements entering the composition. */
   reveal: 1.4,
 } as const;

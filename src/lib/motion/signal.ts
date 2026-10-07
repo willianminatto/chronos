@@ -17,10 +17,15 @@ const HEAD_HANDOVER = 1;
  * `.duration()` before adding it to a chapter timeline.
  *
  * Only one head shows at a time: every segment after the first keeps its
- * head hidden until the previous one has resolved. The first is left alone,
- * because it takes over from whatever came before the chain.
+ * head hidden until the previous one has resolved. The first is left alone
+ * by default, because it takes over from whatever came before the chain.
+ * Pass `waits` when the chain starts the moment the previous one ends, as on
+ * compact screens: its first head then stays hidden until the chain moves.
  */
-export function resolveSignalChain(segments: SignalSegment[]) {
+export function resolveSignalChain(
+  segments: SignalSegment[],
+  { waits = false } = {},
+) {
   const chain = gsap.timeline({ defaults: { ease: EASE.linear } });
 
   segments.forEach(({ target, length }, index) => {
@@ -28,7 +33,7 @@ export function resolveSignalChain(segments: SignalSegment[]) {
 
     // Visibility, not opacity: a relay segment's own opacity rule must keep
     // working once this head has been shown.
-    if (index > 0 && head) {
+    if ((index > 0 || waits) && head) {
       chain.fromTo(
         head,
         { visibility: "hidden" },

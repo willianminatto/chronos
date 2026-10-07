@@ -1,12 +1,40 @@
 @import "tailwindcss";
 
+/* Lets the signal's progress be tweened and transitioned as a number. */
+@property --signal-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
 :root {
   --chronos-bg: #0b0b0a;
   --chronos-fg: #ece8df;
   --chronos-muted: #8a877f;
   --chronos-line: #2a2926;
+  --chronos-line-strong: #57544d;
+  /* The only chromatic value. A chapter may reassign it on its own root element. */
+  --chronos-accent: #ff5a1f;
+
+  --chronos-gutter: clamp(1rem, 3vw, 3rem);
+  --chronos-grid-gap: clamp(0.75rem, 1.5vw, 1.5rem);
+  /* Grid lines run through the middle of the column gaps, so text never touches them. */
+  --chronos-grid-rail: calc(var(--chronos-grid-gap) / 2);
+  /* Page edge to the outer grid line. */
+  --chronos-frame: calc(var(--chronos-gutter) - var(--chronos-grid-rail));
+  --chronos-grid-columns: 4;
+  /* Columns between two visible lines of a sparse TechnicalGrid. */
+  --chronos-grid-sparse-step: 2;
 
   color-scheme: dark;
+}
+
+/* Matches Tailwind's `lg` and MOTION_QUERIES.desktop. */
+@media (min-width: 64rem) {
+  :root {
+    --chronos-grid-columns: 12;
+    --chronos-grid-sparse-step: 3;
+  }
 }
 
 @theme inline {
@@ -14,9 +42,41 @@
   --color-foreground: var(--chronos-fg);
   --color-muted: var(--chronos-muted);
   --color-line: var(--chronos-line);
+  --color-line-strong: var(--chronos-line-strong);
+  --color-accent: var(--chronos-accent);
 
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Type scale. The rem term keeps every step responsive to browser zoom. */
+  --text-massive: clamp(4.5rem, 1rem + 19vw, 26rem);
+  --text-massive--line-height: 0.8;
+  --text-massive--letter-spacing: -0.03em;
+  --text-massive--font-weight: 800;
+  --text-display: clamp(2.5rem, 1.25rem + 5.5vw, 7.5rem);
+  --text-display--line-height: 0.9;
+  --text-display--letter-spacing: -0.015em;
+  --text-heading: clamp(1.5rem, 1.1rem + 1.6vw, 2.75rem);
+  --text-heading--line-height: 1;
+  --text-heading--letter-spacing: -0.01em;
+  --text-body: clamp(1rem, 0.94rem + 0.3vw, 1.25rem);
+  --text-body--line-height: 1.5;
+  --text-technical: clamp(0.8125rem, 0.77rem + 0.16vw, 0.9375rem);
+  --text-technical--line-height: 1.4;
+  --text-technical--letter-spacing: 0.08em;
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.4;
+  --text-micro--letter-spacing: 0.12em;
+
+  /* Spacing vocabulary: page edge, grid line offsets, label, editorial block. */
+  --spacing-gutter: var(--chronos-gutter);
+  --spacing-rail: var(--chronos-grid-rail);
+  --spacing-frame: var(--chronos-frame);
+  --spacing-meta: 0.75rem;
+  --spacing-block: clamp(1.5rem, 3.5vw, 3.5rem);
+
+  /* CSS counterpart of EASE.expressive in src/lib/motion/config.ts. */
+  --ease-expressive: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 /* Box sizing and margin resets come from Tailwind's preflight. */
@@ -36,5 +96,213 @@
     text-rendering: optimizeLegibility;
     /* clip, not hidden: hidden would turn body into a scroll container and break sticky/pinned sections. */
     overflow-x: clip;
+  }
+
+  /*
+   * Elements that a GSAP intro reveals start hidden, so the server-rendered
+   * final state never flashes before the timeline takes over. The rule only
+   * applies when motion is allowed and scripts run: with reduced motion or
+   * without JavaScript the content is simply there.
+   */
+  @media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+    [data-reveal] {
+      visibility: hidden;
+    }
+
+    /* Signal segments that a scroll timeline resolves start unresolved. */
+    [data-signal-pending] {
+      --signal-progress: 0;
+    }
+  }
+}
+
+@layer components {
+  /* Layout grid shared by every chapter: 4 columns, 12 from `lg`. */
+  .chronos-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--chronos-grid-columns), minmax(0, 1fr));
+    column-gap: var(--chronos-grid-gap);
+    padding-inline: var(--chronos-gutter);
+  }
+
+  /*
+   * Visible counterpart of .chronos-grid: one element, two background layers.
+   * It extends half a gap past the content on both sides; the first layer
+   * draws a line before every nth column, the second closes the right edge.
+   */
+  .technical-grid {
+    --technical-grid-step: var(--chronos-grid-sparse-step);
+
+    position: absolute;
+    inset-block: 0;
+    inset-inline: var(--chronos-frame);
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--chronos-line) 1px, transparent 1px),
+      linear-gradient(var(--chronos-line), var(--chronos-line));
+    background-size:
+      calc(100% / var(--chronos-grid-columns) * var(--technical-grid-step)) 100%,
+      1px 100%;
+    background-position:
+      0 0,
+      100% 0;
+    background-repeat: repeat-x, no-repeat;
+  }
+
+  .technical-grid[data-density="full"] {
+    --technical-grid-step: 1;
+  }
+
+  /*
+   * Persistent Signal: a resolved trace over an unresolved dashed track, with
+   * square nodes centered on its origin, head and terminal.
+   * --signal-progress (0–1) places the head and sizes the trace. Segments are
+   * straight; a path is several segments meeting at their end nodes.
+   */
+  .signal-line {
+    --signal-node: 0.5rem;
+    --signal-pulse: 1.5rem;
+
+    position: relative;
+    height: var(--signal-node);
+    container-type: inline-size;
+  }
+
+  .signal-line__track,
+  .signal-line__trace,
+  .signal-line__pulse {
+    position: absolute;
+    top: calc(50% - 0.5px);
+    left: 0;
+    height: 1px;
+  }
+
+  .signal-line__track {
+    width: 100%;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--chronos-line-strong) 0 0.25rem,
+      transparent 0.25rem 0.5rem
+    );
+  }
+
+  .signal-line__trace {
+    width: 100%;
+    background-color: var(--chronos-fg);
+    transform-origin: 0 50%;
+    scale: var(--signal-progress) 1;
+  }
+
+  .signal-line__node {
+    position: absolute;
+    top: 0;
+    left: calc(var(--signal-node) / -2);
+    width: var(--signal-node);
+    height: var(--signal-node);
+    border: 1px solid var(--chronos-fg);
+    background-color: var(--chronos-bg);
+  }
+
+  .signal-line__node--terminal {
+    left: auto;
+    right: calc(var(--signal-node) / -2);
+    border-color: var(--chronos-line-strong);
+  }
+
+  .signal-line__node--head {
+    border-color: var(--chronos-accent);
+    background-color: var(--chronos-accent);
+    translate: calc(var(--signal-progress) * 100cqi) 0;
+  }
+
+  /* The head of a relay segment leaves once the next segment takes over. */
+  .signal-line[data-relay] .signal-line__node--head {
+    opacity: calc((1 - var(--signal-progress)) * 100);
+  }
+
+  .signal-line--vertical {
+    width: var(--signal-node);
+    height: auto;
+    container-type: size;
+  }
+
+  .signal-line--vertical .signal-line__track,
+  .signal-line--vertical .signal-line__trace {
+    top: 0;
+    left: calc(50% - 0.5px);
+    width: 1px;
+    height: 100%;
+  }
+
+  .signal-line--vertical .signal-line__track {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--chronos-line-strong) 0 0.25rem,
+      transparent 0.25rem 0.5rem
+    );
+  }
+
+  .signal-line--vertical .signal-line__trace {
+    transform-origin: 50% 0;
+    scale: 1 var(--signal-progress);
+  }
+
+  .signal-line--vertical .signal-line__node {
+    top: calc(var(--signal-node) / -2);
+    left: 0;
+  }
+
+  .signal-line--vertical .signal-line__node--terminal {
+    top: auto;
+    right: auto;
+    bottom: calc(var(--signal-node) / -2);
+  }
+
+  .signal-line--vertical .signal-line__node--head {
+    translate: 0 calc(var(--signal-progress) * 100cqb);
+  }
+
+  .signal-line__pulse {
+    display: none;
+    width: var(--signal-pulse);
+    background-color: var(--chronos-accent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .signal-line__pulse {
+      display: block;
+      opacity: 0;
+      animation: signal-pulse 4.8s var(--ease-expressive) infinite;
+    }
+  }
+}
+
+/*
+ * Sizes a single word to span its container: --fit is the word's advance
+ * width in em. Needs a size container ancestor. Declared after the Tailwind
+ * import so it overrides the font size of a type-scale utility.
+ */
+@layer utilities {
+  .text-fit {
+    font-size: calc(100cqi / var(--fit));
+  }
+}
+
+/* Travels the resolved trace once, then rests for the second half of the loop. */
+@keyframes signal-pulse {
+  0% {
+    opacity: 0;
+    translate: 0 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  42% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+    translate: calc(var(--signal-progress) * 100cqi - var(--signal-pulse)) 0;
   }
 }

@@ -1,0 +1,138 @@
+/*
+ * Global, unlayered styles for the Chip chapter, namespaced `chip-`.
+ *
+ * The circuit is one SVG in a 600-unit square. Compact screens show its
+ * middle 400 units; desktop fits the square to the section height.
+ */
+
+.chip-figure {
+  position: relative;
+  /* Brings the top of the drawing onto the incoming signal segment. */
+  margin-top: -0.25rem;
+}
+
+.chip-svg {
+  /* One device pixel, expressed in drawing units. */
+  --chip-hairline: 1.05;
+
+  display: block;
+  width: 150%;
+  margin-left: -25%;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+
+.chip-line,
+.chip-trace,
+.chip-signal {
+  fill: none;
+  stroke-width: var(--chip-hairline);
+}
+
+.chip-line {
+  stroke: var(--chronos-line-strong);
+}
+
+.chip-die {
+  stroke: var(--chronos-fg);
+}
+
+.chip-pad {
+  fill: var(--chronos-line-strong);
+}
+
+.chip-terminal {
+  fill: var(--chronos-bg);
+  stroke: var(--chronos-fg);
+  stroke-width: var(--chip-hairline);
+}
+
+/* pathLength is 1 on every drawn path, so a dash of 1 is the whole path. */
+.chip-die,
+.chip-trace,
+.chip-signal {
+  stroke-dasharray: 1;
+}
+
+.chip-trace {
+  stroke: var(--chronos-muted);
+}
+
+.chip-signal {
+  stroke: var(--chronos-fg);
+  stroke-width: calc(var(--chip-hairline) * 2);
+  stroke-dashoffset: calc(1 - var(--signal-progress));
+}
+
+/* Rides the signal path, and leaves once the next chapter takes over. */
+.chip-signal-head {
+  fill: var(--chronos-accent);
+  offset-rotate: 0deg;
+  offset-distance: calc(var(--signal-progress) * 100%);
+  opacity: calc((1 - var(--signal-progress)) * 100);
+}
+
+.chip-mesh {
+  display: none;
+}
+
+.chip-mesh-cell {
+  fill: none;
+  stroke: var(--chronos-line-strong);
+  stroke-width: var(--chip-hairline);
+}
+
+@media (min-width: 64rem) {
+  .chip-figure {
+    position: absolute;
+    inset: 0;
+    margin-top: 0;
+  }
+
+  .chip-svg {
+    --chip-hairline: 0.7;
+
+    position: absolute;
+    left: 50%;
+    width: auto;
+    height: 100%;
+    margin-left: 0;
+    translate: -50% 0;
+  }
+
+  .chip-mesh {
+    display: inline;
+  }
+
+  /* The word splits around the die, which sits where its middle would be. */
+  .chip-title {
+    position: absolute;
+    inset: 0;
+    container-type: size;
+  }
+
+  .chip-title__half {
+    --chip-die-half: calc(100cqb / 6);
+    --chip-title-gap: 2cqb;
+
+    position: absolute;
+    top: 50%;
+    overflow-x: clip;
+    font-size: min(46cqb, 15cqi);
+    translate: 0 -50%;
+  }
+
+  .chip-title__half:first-child {
+    right: calc(50% + var(--chip-die-half) + var(--chip-title-gap));
+  }
+
+  .chip-title__half:last-child {
+    left: calc(50% + var(--chip-die-half) + var(--chip-title-gap));
+  }
+
+  /* The padding keeps the ink that overhangs the advance inside the clip. */
+  .chip-title__half > span {
+    display: block;
+    padding-inline: 0.1em;
+  }
+}

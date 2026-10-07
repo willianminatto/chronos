@@ -35,8 +35,9 @@ const machine = eras[1];
  * Chapter 01. The signal arrives on the grid's frame line and becomes an
  * electrical path. On desktop the machine enters first, far larger than the
  * viewport; the pinned section zooms out until its full scale is visible,
- * runs the signal through every unit, then starts compressing it. Compact
- * screens scroll past a column of units while the signal follows.
+ * runs the signal through every unit, then compresses it to half, which
+ * puts the end of the bus on the center line where the signal leaves.
+ * Compact screens scroll past a column of units while the signal follows.
  */
 export function Machine() {
   const root = useRef<HTMLElement>(null);
@@ -54,10 +55,10 @@ export function Machine() {
         if (!conditions.desktop) {
           // The spine has no head until the Intro's signal reaches it.
           gsap.fromTo(
-            "[data-machine='spine'] .signal-line__node--head",
-            { autoAlpha: 0 },
+            "[data-machine='spine'] [data-signal-head]",
+            { visibility: "hidden" },
             {
-              autoAlpha: 1,
+              visibility: "inherit",
               duration: 0,
               scrollTrigger: {
                 trigger: "[data-machine='spine']",
@@ -131,8 +132,8 @@ export function Machine() {
           },
         });
 
-        const signalStart = 0.45;
-        const signalDuration = 0.33;
+        const signalStart = 0.4;
+        const signalDuration = 0.3;
 
         timeline
           .fromTo(
@@ -145,17 +146,17 @@ export function Machine() {
           .from(
             "[data-machine='line']",
             { scaleX: 0, transformOrigin: "0% 50%", duration: 0.2 },
-            0.34,
+            0.3,
           )
           .from(
             "[data-machine='meta']",
             { opacity: 0, duration: 0.08, stagger: 0.03 },
-            0.38,
+            0.34,
           )
           .from(
             "[data-machine='title']",
             { yPercent: 100, ease: EASE.primary, duration: 0.25 },
-            0.36,
+            0.32,
           )
           .from(
             "[data-machine='copy']",
@@ -166,13 +167,13 @@ export function Machine() {
               duration: 0.15,
               stagger: 0.04,
             },
-            0.4,
+            0.36,
           )
           // The bus has no head until the signal turns into it.
           .fromTo(
-            "[data-machine='bus'] .signal-line__node--head",
-            { autoAlpha: 0 },
-            { autoAlpha: 1, ease: EASE.linear, duration: 0.01 },
+            "[data-machine='bus'] [data-signal-head]",
+            { visibility: "hidden" },
+            { visibility: "inherit", ease: EASE.linear, duration: 0.01 },
             signalStart,
           )
           .fromTo(
@@ -196,11 +197,26 @@ export function Machine() {
           );
         });
 
-        timeline.to(
-          "[data-machine='wall']",
-          { "--machine-scale": WALL_COMPRESSED, duration: 0.2 },
-          0.8,
-        );
+        // Compressed to half, the bus ends on the center line, where the
+        // signal leaves for the next era.
+        timeline
+          .to(
+            "[data-machine='wall']",
+            { "--machine-scale": WALL_COMPRESSED, duration: 0.18 },
+            0.72,
+          )
+          .fromTo(
+            "[data-machine='exit'] [data-signal-head]",
+            { visibility: "hidden" },
+            { visibility: "inherit", ease: EASE.linear, duration: 0.01 },
+            0.9,
+          )
+          .fromTo(
+            "[data-machine='exit']",
+            { "--signal-progress": 0 },
+            { "--signal-progress": 1, ease: EASE.linear, duration: 0.1 },
+            0.9,
+          );
       });
     },
     { scope: root },
@@ -218,7 +234,16 @@ export function Machine() {
         data-signal-pending
         orientation="vertical"
         track={false}
-        className="absolute top-0 bottom-gutter left-frame -translate-x-1/2 lg:hidden"
+        relay
+        className="absolute inset-y-0 left-frame -translate-x-1/2 lg:hidden"
+      />
+      <SignalLine
+        data-machine="exit"
+        data-signal-pending
+        orientation="vertical"
+        track={false}
+        relay
+        className="absolute top-block bottom-0 left-1/2 -translate-x-1/2 max-lg:hidden"
       />
 
       <div className="relative flex flex-col px-gutter pt-20 pb-block lg:row-start-2 lg:pt-block lg:pb-0">
@@ -275,6 +300,7 @@ export function Machine() {
           <SignalLine
             data-machine="bus"
             data-signal-pending
+            relay
             className="max-lg:hidden"
           />
           <div className="machine-units">

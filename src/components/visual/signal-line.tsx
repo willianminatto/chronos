@@ -52,7 +52,10 @@ export function SignalLine({
       <span className="signal-line__node" />
       <span className="signal-line__node signal-line__node--terminal" />
       {head ? (
-        <span className="signal-line__node signal-line__node--head" />
+        <span
+          data-signal-head
+          className="signal-line__node signal-line__node--head"
+        />
       ) : null}
     </div>
   );

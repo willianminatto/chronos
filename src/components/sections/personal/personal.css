@@ -1,0 +1,237 @@
+/*
+ * Global, unlayered styles for the Personal chapter, namespaced `personal-`.
+ *
+ * The section is a display: a field of cells that crops down to a frame, in
+ * which a small fictional interface is assembled.
+ */
+
+.personal {
+  /* A formatting context of its own, so the frame's margins stay inside. */
+  display: flow-root;
+
+  /* One cell of the display. On desktop it matches the mesh the Chip ends on. */
+  --personal-pixel: 1.25rem;
+  /* Space above and below the frame; the signal crosses both. */
+  --personal-top: 2.5rem;
+  --personal-bottom: 5rem;
+  --personal-bar: 3rem;
+  --personal-pad: 1rem;
+  /* Space between the last line of the interface and the frame. */
+  --personal-foot: 1.5rem;
+  /* 0 shows the whole field of cells, 1 crops it to the frame. */
+  --personal-crop: 1;
+}
+
+.personal-mesh {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--chronos-line-strong) 1px, transparent 1px),
+    linear-gradient(to right, var(--chronos-line-strong) 1px, transparent 1px);
+  background-size: var(--personal-pixel) var(--personal-pixel);
+  /* Puts a vertical line on the center, where the signal runs. */
+  background-position: calc(50% + var(--personal-pixel) / 2) 0;
+  opacity: 0.4;
+  clip-path: inset(
+    calc(var(--personal-crop) * var(--personal-top))
+      calc(var(--personal-crop) * var(--chronos-frame))
+      calc(var(--personal-crop) * var(--personal-bottom))
+  );
+}
+
+.personal-entry,
+.personal-exit {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+}
+
+/* Section top to the divider under the status bar. */
+.personal-entry {
+  top: 0;
+  height: calc(var(--personal-top) + var(--personal-bar) + 0.25rem);
+}
+
+/* The underline of the statement to the section bottom. */
+.personal-exit {
+  bottom: 0;
+  height: calc(var(--personal-bottom) + var(--personal-foot) + 0.25rem);
+}
+
+.personal-frame {
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--personal-bar) auto auto 1fr auto auto;
+  min-height: calc(100svh - var(--personal-top) - var(--personal-bottom));
+  margin: var(--personal-top) var(--chronos-frame) var(--personal-bottom);
+}
+
+.personal-outline {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--chronos-line-strong);
+  pointer-events: none;
+}
+
+/* The left edge of the frame, from the divider to the underline. */
+.personal-edge {
+  position: absolute;
+  top: calc(var(--personal-bar) + 0.25rem);
+  bottom: calc(var(--personal-foot) + 0.25rem);
+  left: 0;
+  translate: -50% 0;
+}
+
+.personal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: var(--personal-pad);
+}
+
+.personal-windows {
+  display: grid;
+  align-content: start;
+  gap: var(--personal-pad);
+  padding: var(--personal-pad);
+}
+
+.personal-window {
+  display: grid;
+  grid-template-rows: auto auto;
+  min-height: 0;
+  border: 1px solid var(--chronos-line-strong);
+  background-color: var(--chronos-bg);
+}
+
+.personal-window__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--chronos-line-strong);
+}
+
+.personal-window__handle {
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--chronos-fg);
+}
+
+.personal-window__body {
+  position: relative;
+  min-height: 0;
+  padding: 0.75rem;
+}
+
+.personal-window--bitmap .personal-window__body {
+  aspect-ratio: 16 / 13;
+}
+
+/* Out of flow, so the drawing fits the window instead of sizing it. */
+.personal-bitmap {
+  position: absolute;
+  inset: 0.75rem;
+  width: calc(100% - 1.5rem);
+  height: calc(100% - 1.5rem);
+  shape-rendering: crispEdges;
+}
+
+.personal-bitmap__cells {
+  fill: none;
+  stroke: var(--chronos-line);
+  stroke-width: 0.04;
+}
+
+.personal-bitmap__glyph {
+  fill: var(--chronos-fg);
+}
+
+.personal-lines {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+}
+
+.personal-lines > span {
+  height: 0.625rem;
+  background-color: var(--chronos-line-strong);
+  transform-origin: 0 50%;
+}
+
+.personal-statement {
+  width: 50%;
+  padding: 0 var(--personal-pad) var(--personal-pad);
+}
+
+.personal-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.8em;
+  margin-left: 0.2em;
+  background-color: var(--chronos-fg);
+  vertical-align: baseline;
+}
+
+.personal-underline {
+  width: 50%;
+  margin-bottom: var(--personal-foot);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .personal-cursor {
+    animation: personal-cursor 1.1s steps(1) infinite;
+  }
+}
+
+@keyframes personal-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 63.999rem) {
+  .personal-statement {
+    width: auto;
+  }
+
+  .personal-window--text {
+    display: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .personal {
+    --personal-pixel: calc(100svh / 30);
+    --personal-top: 3rem;
+    --personal-bottom: clamp(4rem, 12svh, 7rem);
+    --personal-pad: 1.5rem;
+  }
+
+  .personal-frame {
+    height: calc(100svh - var(--personal-top) - var(--personal-bottom));
+    min-height: 28rem;
+  }
+
+  .personal-windows {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-content: stretch;
+    min-height: 0;
+  }
+
+  .personal-window {
+    grid-template-rows: auto 1fr;
+  }
+
+  .personal-window--bitmap .personal-window__body {
+    aspect-ratio: auto;
+  }
+
+  .personal-window--bitmap {
+    grid-column: 1 / span 5;
+  }
+
+  .personal-window--text {
+    grid-column: 9 / span 4;
+  }
+}

@@ -1,0 +1,263 @@
+/*
+ * Global, unlayered styles for the Web and Always On chapters, namespaced
+ * `network-`.
+ *
+ * Both chapters show the same graph, drawn in a 600-unit square like the
+ * Chip. By default they are two stacked sections, each with its own copy.
+ * On desktop, when motion is allowed, the timeline merges them into one
+ * pinned stage (`data-stage="merged"`) and the first copy plays both parts.
+ */
+
+.network {
+  position: relative;
+}
+
+.network-era {
+  position: relative;
+  overflow: clip;
+}
+
+.network-era__text {
+  position: relative;
+  padding: 5rem var(--chronos-gutter) 2rem;
+}
+
+/* Compact text sits on the canvas color, so the signal passes behind it. */
+.network-era__text > :not(.signal-line) {
+  position: relative;
+  background-color: var(--chronos-bg);
+}
+
+.network-labels {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+}
+
+.network-copy {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+}
+
+.network-graph {
+  /* One device pixel, expressed in drawing units. */
+  --network-hairline: 1.05;
+  /* Progress of the segment that leaves the frame at the end. */
+  --network-exit: 0;
+
+  display: block;
+  width: 150%;
+  margin-left: -25%;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+
+.network-edge,
+.network-flow,
+.network-route,
+.network-route-flow,
+.network-frame,
+.network-exit {
+  fill: none;
+  stroke-width: var(--network-hairline);
+}
+
+/* pathLength is 1 on every path, so dash values are fractions of its length. */
+.network-edge,
+.network-route,
+.network-frame,
+.network-exit {
+  stroke-dasharray: 1;
+}
+
+.network-edge {
+  stroke: var(--chronos-line-strong);
+}
+
+.network-node {
+  fill: var(--chronos-bg);
+  stroke: var(--chronos-fg);
+  stroke-width: var(--network-hairline);
+}
+
+.network-label {
+  fill: var(--chronos-muted);
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+/* The Persistent Signal: a selected path through the network. */
+.network-route,
+.network-exit {
+  stroke: var(--chronos-fg);
+  stroke-width: calc(var(--network-hairline) * 2);
+}
+
+.network-route {
+  stroke-dashoffset: calc(1 - var(--signal-progress));
+}
+
+.network-head,
+.network-exit-head {
+  fill: var(--chronos-accent);
+  offset-rotate: 0deg;
+}
+
+.network-head {
+  offset-distance: calc(var(--signal-progress) * 100%);
+  opacity: calc((1 - var(--signal-progress)) * 100);
+}
+
+/* The last graph of the sequence keeps its head where the signal ends. */
+.network-graph[data-last] .network-head {
+  opacity: 1;
+}
+
+/* Traffic: short dashes that travel along an edge. Static until animated. */
+.network-flow {
+  stroke: var(--chronos-fg);
+  stroke-width: calc(var(--network-hairline) * 2);
+  stroke-dasharray: 0.06 0.24;
+}
+
+.network-route-flow {
+  stroke: var(--chronos-accent);
+  stroke-width: calc(var(--network-hairline) * 2.5);
+  stroke-dasharray: 0.02 0.06;
+}
+
+.network-graph[data-flow="off"] .network-flow,
+.network-graph[data-flow="off"] .network-route-flow {
+  visibility: hidden;
+}
+
+.network-graph[data-flow="on"] .network-route {
+  opacity: 0.35;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .network.is-live .network-flow {
+    animation: network-flow var(--network-flow-seconds, 1.6s) linear infinite
+      var(--network-flow-direction, normal);
+  }
+
+  .network.is-live .network-route-flow {
+    animation: network-route-flow 1.4s linear infinite;
+  }
+}
+
+/* One dash period each, so both loops are seamless. */
+@keyframes network-flow {
+  to {
+    stroke-dashoffset: -0.3;
+  }
+}
+
+@keyframes network-route-flow {
+  to {
+    stroke-dashoffset: -0.08;
+  }
+}
+
+/* The frame the network converges into, and the way out of it. Timeline only. */
+.network-frame {
+  stroke: var(--chronos-fg);
+  stroke-dashoffset: 1;
+}
+
+.network-exit,
+.network-exit-head {
+  visibility: hidden;
+}
+
+.network-exit {
+  stroke-dashoffset: calc(1 - var(--network-exit));
+}
+
+.network-exit-head {
+  offset-distance: calc(var(--network-exit) * 100%);
+}
+
+@media (max-width: 63.999rem) {
+  .network-wide,
+  .network-label {
+    display: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .network-era {
+    height: 100svh;
+    min-height: 34rem;
+  }
+
+  .network-era__text {
+    position: static;
+    padding: 0;
+  }
+
+  .network-era__text > :not(.signal-line) {
+    position: absolute;
+    background-color: transparent;
+  }
+
+  .network-era__text > .network-labels {
+    top: var(--chronos-gutter);
+    inset-inline: var(--chronos-gutter);
+    padding-bottom: 0;
+  }
+
+  /* Sized by its text here, not fitted to a container. */
+  .network-era__text > .network-title-box {
+    bottom: var(--chronos-gutter);
+    left: var(--chronos-gutter);
+    overflow-y: clip;
+    container-type: normal;
+  }
+
+  .network-title {
+    font-size: clamp(4rem, 13vw, 14rem);
+  }
+
+  .network-era__text > .network-copy {
+    right: var(--chronos-gutter);
+    bottom: var(--chronos-gutter);
+    width: min(20rem, 24vw);
+    padding-top: 0;
+  }
+
+  .network-figure {
+    position: absolute;
+    inset: 0;
+  }
+
+  .network-graph {
+    --network-hairline: 0.7;
+
+    position: absolute;
+    left: 50%;
+    width: auto;
+    height: 100%;
+    margin-left: 0;
+    translate: -50% 0;
+  }
+
+  .network[data-stage="merged"] {
+    height: 100svh;
+    min-height: 34rem;
+    overflow: clip;
+  }
+
+  .network[data-stage="merged"] .network-era {
+    position: absolute;
+    inset: 0;
+    height: auto;
+  }
+
+  .network[data-stage="merged"] .network-era--always-on .network-figure {
+    display: none;
+  }
+}

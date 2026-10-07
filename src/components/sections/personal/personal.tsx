@@ -250,6 +250,7 @@ export function Personal() {
         data-signal-pending
         orientation="vertical"
         track={false}
+        relay
         className="personal-exit"
       />
 

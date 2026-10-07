@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --chronos-bg: #0b0b0a;
+  --chronos-fg: #ece8df;
+  --chronos-muted: #8a877f;
+  --chronos-line: #2a2926;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--chronos-bg);
+  --color-foreground: var(--chronos-fg);
+  --color-muted: var(--chronos-muted);
+  --color-line: var(--chronos-line);
+
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+/* Box sizing and margin resets come from Tailwind's preflight. */
+@layer base {
+  html {
+    background-color: var(--chronos-bg);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--chronos-bg);
+    color: var(--chronos-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* clip, not hidden: hidden would turn body into a scroll container and break sticky/pinned sections. */
+    overflow-x: clip;
+  }
+}

@@ -1,0 +1,163 @@
+/*
+ * Global, unlayered styles for the Machine chapter, namespaced `machine-`.
+ *
+ * The machine: a row of cabinets hanging from a bus on desktop, a column of
+ * panels attached to a spine on compact screens. Every pattern is a CSS
+ * background sized in container units, so a unit is three elements at any
+ * scale.
+ */
+
+.machine-wall {
+  /* Distance between the bus and the cabinets. */
+  --machine-stub: 1.5rem;
+
+  /* Tweened by the desktop timeline. */
+  --machine-scale: 1;
+  /* Lines thicken when zoomed in but never drop below a device pixel when compressed. */
+  --machine-hairline: max(1px, calc(1px / var(--machine-scale)));
+
+  position: relative;
+  height: 100%;
+  scale: var(--machine-scale);
+  /* The corner where the signal enters, so zooming never moves it. */
+  transform-origin: 0 0.25rem;
+}
+
+.machine-units {
+  display: grid;
+  row-gap: 0.75rem;
+  padding-inline: var(--chronos-grid-rail);
+}
+
+.machine-unit {
+  position: relative;
+  aspect-ratio: 5 / 3;
+  border: var(--machine-hairline) solid var(--chronos-line-strong);
+  background-color: var(--chronos-bg);
+  container-type: inline-size;
+}
+
+/* Connects the unit to the spine. */
+.machine-unit::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: var(--chronos-grid-rail);
+  height: var(--machine-hairline);
+  background-color: var(--chronos-line-strong);
+}
+
+.machine-label {
+  position: absolute;
+  top: 4cqi;
+  left: 5cqi;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: max(0.6875rem, 4.5cqi);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: var(--chronos-muted);
+}
+
+.machine-field {
+  --cell: 6cqi;
+
+  position: absolute;
+  inset: 16cqi 5cqi 5cqi;
+  color: var(--chronos-line-strong);
+}
+
+.machine-lit {
+  color: var(--chronos-fg);
+}
+
+.machine-field::before,
+.machine-field::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+}
+
+/* Upper region: the unit's working surface. Tubes by default. */
+.machine-field::before {
+  top: 0;
+  bottom: 30%;
+  background-image: radial-gradient(
+    circle at center,
+    currentColor 0 24%,
+    transparent 27%
+  );
+  background-size: var(--cell) var(--cell);
+  /* Whole cells only: the pattern is rescaled to fit instead of clipped. */
+  background-repeat: round;
+}
+
+/* Lower region: ventilation louvers. */
+.machine-field::after {
+  bottom: 0;
+  height: 22%;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    currentColor 0 var(--machine-hairline),
+    transparent var(--machine-hairline) calc(var(--cell) / 2)
+  );
+}
+
+.machine-unit[data-variant="mesh"] .machine-field::before {
+  background-image:
+    linear-gradient(
+      currentColor var(--machine-hairline),
+      transparent var(--machine-hairline)
+    ),
+    linear-gradient(
+      to right,
+      currentColor var(--machine-hairline),
+      transparent var(--machine-hairline)
+    );
+  background-size: calc(var(--cell) * 2) calc(var(--cell) * 2);
+  border-right: var(--machine-hairline) solid currentColor;
+  border-bottom: var(--machine-hairline) solid currentColor;
+}
+
+.machine-unit[data-variant="slots"] .machine-field::before {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    currentColor 0 calc(var(--cell) * 0.5),
+    transparent calc(var(--cell) * 0.5) calc(var(--cell) * 1.5)
+  );
+}
+
+@media (min-width: 64rem) {
+  .machine-units {
+    grid-template-columns: repeat(var(--machine-units), minmax(0, 1fr));
+    column-gap: var(--chronos-grid-gap);
+    height: 100%;
+    padding-top: var(--machine-stub);
+  }
+
+  .machine-unit {
+    aspect-ratio: auto;
+    min-height: 18rem;
+  }
+
+  .machine-unit::before {
+    top: auto;
+    right: auto;
+    bottom: 100%;
+    left: 50%;
+    width: var(--machine-hairline);
+    height: var(--machine-stub);
+  }
+
+  .machine-label {
+    top: 6cqi;
+    left: 8cqi;
+    font-size: max(0.6875rem, 6cqi);
+  }
+
+  .machine-field {
+    --cell: 12cqi;
+
+    inset: 22cqi 8cqi 8cqi;
+  }
+}

@@ -1,0 +1,296 @@
+"use client";
+
+import { useRef } from "react";
+import { SignalLine } from "@/components/visual/signal-line";
+import { StructuralLine } from "@/components/visual/structural-line";
+import { TechnicalGrid } from "@/components/visual/technical-grid";
+import { TechnicalLabel } from "@/components/visual/technical-label";
+import { eras } from "@/data/eras";
+import { COMPACT_SIGNAL_LINE, DURATION, EASE } from "@/lib/motion/config";
+import { gsap, useGSAP } from "@/lib/motion/gsap";
+import { MOTION_CONDITIONS } from "@/lib/motion/media-queries";
+import "./machine.css";
+
+/** Width of "MACHINE" in em, measured the same way as the Intro title. */
+const TITLE_FIT = {
+  "--fit-compressed": 3.14,
+  "--fit-extended": 5.95,
+};
+
+const UNIT_VARIANTS = ["tubes", "mesh", "tubes", "slots", "tubes", "mesh"];
+const WALL_STYLE = { "--machine-units": UNIT_VARIANTS.length };
+
+/** Scroll distance of the pinned desktop sequence, relative to the viewport. */
+const PIN_DISTANCE = "+=220%";
+/** The wall is first seen this much larger than it is: structure before object. */
+const WALL_ZOOM = 2.6;
+/** Final scale of the wall, as it starts to shrink toward the next era. */
+const WALL_COMPRESSED = 0.5;
+
+const formatIndex = (index: number) => String(index).padStart(2, "0");
+
+const machine = eras[1];
+
+/**
+ * Chapter 01. The signal arrives on the grid's frame line and becomes an
+ * electrical path. On desktop the machine enters first, far larger than the
+ * viewport; the pinned section zooms out until its full scale is visible,
+ * runs the signal through every unit, then starts compressing it. Compact
+ * screens scroll past a column of units while the signal follows.
+ */
+export function Machine() {
+  const root = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+
+      mm.add(MOTION_CONDITIONS, ({ conditions }) => {
+        const section = root.current;
+        if (!section || !conditions || conditions.reduced) return;
+
+        const lit = gsap.utils.toArray<HTMLElement>("[data-machine='lit']");
+
+        if (!conditions.desktop) {
+          // The spine has no head until the Intro's signal reaches it.
+          gsap.fromTo(
+            "[data-machine='spine'] .signal-line__node--head",
+            { autoAlpha: 0 },
+            {
+              autoAlpha: 1,
+              duration: 0,
+              scrollTrigger: {
+                trigger: "[data-machine='spine']",
+                start: `top ${COMPACT_SIGNAL_LINE}`,
+                toggleActions: "play none none reverse",
+              },
+            },
+          );
+
+          gsap.fromTo(
+            "[data-machine='spine']",
+            { "--signal-progress": 0 },
+            {
+              "--signal-progress": 1,
+              ease: EASE.linear,
+              scrollTrigger: {
+                trigger: "[data-machine='spine']",
+                start: `top ${COMPACT_SIGNAL_LINE}`,
+                end: `bottom ${COMPACT_SIGNAL_LINE}`,
+                scrub: true,
+              },
+            },
+          );
+
+          lit.forEach((layer) => {
+            gsap.fromTo(
+              layer,
+              { opacity: 0 },
+              {
+                opacity: 1,
+                duration: DURATION.short,
+                ease: EASE.primary,
+                scrollTrigger: {
+                  trigger: layer,
+                  start: `center ${COMPACT_SIGNAL_LINE}`,
+                  toggleActions: "play none none reverse",
+                },
+              },
+            );
+          });
+
+          return;
+        }
+
+        // The signal reaches the machine as the section arrives.
+        gsap.fromTo(
+          "[data-machine='drop']",
+          { "--signal-progress": 0 },
+          {
+            "--signal-progress": 1,
+            ease: EASE.linear,
+            scrollTrigger: {
+              trigger: section,
+              start: "top bottom",
+              end: "top top",
+              scrub: true,
+            },
+          },
+        );
+
+        // Positions and durations below are fractions of the scroll range.
+        const timeline = gsap.timeline({
+          defaults: { ease: EASE.expressive },
+          scrollTrigger: {
+            trigger: section,
+            start: "top top",
+            end: PIN_DISTANCE,
+            pin: true,
+            scrub: 0.5,
+            anticipatePin: 1,
+          },
+        });
+
+        const signalStart = 0.45;
+        const signalDuration = 0.33;
+
+        timeline
+          .fromTo(
+            "[data-machine='wall']",
+            { "--machine-scale": WALL_ZOOM },
+            { "--machine-scale": 1, duration: signalStart },
+            0,
+          )
+          // The text zone clears as the wall settles above it.
+          .from(
+            "[data-machine='line']",
+            { scaleX: 0, transformOrigin: "0% 50%", duration: 0.2 },
+            0.34,
+          )
+          .from(
+            "[data-machine='meta']",
+            { opacity: 0, duration: 0.08, stagger: 0.03 },
+            0.38,
+          )
+          .from(
+            "[data-machine='title']",
+            { yPercent: 100, ease: EASE.primary, duration: 0.25 },
+            0.36,
+          )
+          .from(
+            "[data-machine='copy']",
+            {
+              opacity: 0,
+              yPercent: 24,
+              ease: EASE.primary,
+              duration: 0.15,
+              stagger: 0.04,
+            },
+            0.4,
+          )
+          // The bus has no head until the signal turns into it.
+          .fromTo(
+            "[data-machine='bus'] .signal-line__node--head",
+            { autoAlpha: 0 },
+            { autoAlpha: 1, ease: EASE.linear, duration: 0.01 },
+            signalStart,
+          )
+          .fromTo(
+            "[data-machine='bus']",
+            { "--signal-progress": 0 },
+            {
+              "--signal-progress": 1,
+              ease: EASE.linear,
+              duration: signalDuration,
+            },
+            signalStart,
+          );
+
+        // Each unit lights up as the head passes its connection to the bus.
+        lit.forEach((layer, index) => {
+          timeline.fromTo(
+            layer,
+            { opacity: 0 },
+            { opacity: 1, ease: EASE.linear, duration: 0.03 },
+            signalStart + (signalDuration * (index + 0.5)) / lit.length,
+          );
+        });
+
+        timeline.to(
+          "[data-machine='wall']",
+          { "--machine-scale": WALL_COMPRESSED, duration: 0.2 },
+          0.8,
+        );
+      });
+    },
+    { scope: root },
+  );
+
+  return (
+    <section
+      ref={root}
+      aria-labelledby="machine-title"
+      className="relative grid min-h-svh grid-cols-1 grid-rows-[auto_1fr] overflow-clip lg:grid-rows-[1fr_auto]"
+    >
+      <TechnicalGrid />
+      <SignalLine
+        data-machine="spine"
+        data-signal-pending
+        orientation="vertical"
+        track={false}
+        className="absolute top-0 bottom-gutter left-frame -translate-x-1/2 lg:hidden"
+      />
+
+      <div className="relative flex flex-col px-gutter pt-20 pb-block lg:row-start-2 lg:pt-block lg:pb-0">
+        <div className="flex items-baseline justify-between pb-meta">
+          <TechnicalLabel data-machine="meta">
+            Era /{" "}
+            <span className="text-accent">{formatIndex(machine.index)}</span>
+          </TechnicalLabel>
+          <TechnicalLabel data-machine="meta">{machine.period}</TechnicalLabel>
+        </div>
+        <StructuralLine data-machine="line" tone="strong" className="-mx-rail" />
+        <div className="@container overflow-y-clip pt-block lg:order-last lg:pt-meta">
+          <h2
+            id="machine-title"
+            data-machine="title"
+            className="-ml-[0.04em] text-fit text-massive whitespace-nowrap uppercase [--fit:var(--fit-compressed)] font-stretch-[62%] lg:[--fit:var(--fit-extended)] lg:font-stretch-[125%]"
+            style={TITLE_FIT}
+          >
+            {machine.title}
+          </h2>
+        </div>
+        <div className="grid gap-x-track gap-y-meta pt-block lg:grid-cols-12">
+          <p
+            data-machine="copy"
+            className="text-heading font-semibold font-stretch-[125%] uppercase lg:col-span-6"
+          >
+            Computation becomes physical.
+          </p>
+          <p
+            data-machine="copy"
+            className="max-w-[38ch] text-body text-muted lg:col-span-4 lg:col-start-7"
+          >
+            The first electronic computers filled entire rooms and switched
+            with thousands of vacuum tubes.
+          </p>
+        </div>
+      </div>
+
+      <div className="relative mx-frame pb-gutter lg:row-start-1 lg:pt-block lg:pb-0">
+        <SignalLine
+          data-machine="drop"
+          data-signal-pending
+          orientation="vertical"
+          track={false}
+          relay
+          className="absolute top-0 left-0 h-block -translate-x-1/2 max-lg:hidden"
+        />
+        <div
+          aria-hidden
+          data-machine="wall"
+          className="machine-wall lg:-mt-1"
+          style={WALL_STYLE}
+        >
+          <SignalLine
+            data-machine="bus"
+            data-signal-pending
+            className="max-lg:hidden"
+          />
+          <div className="machine-units">
+            {UNIT_VARIANTS.map((variant, index) => (
+              <div key={index} className="machine-unit" data-variant={variant}>
+                <span className="machine-label">U/{formatIndex(index + 1)}</span>
+                <div className="machine-field" />
+                <div
+                  data-machine="lit"
+                  className="machine-field machine-lit"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

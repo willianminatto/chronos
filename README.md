@@ -6,9 +6,7 @@ Chronos is a scroll-driven web experience about the evolution of computing, from
 
 ## Status
 
-Stage 05 — six chapters. Intro, Machine (1940s–1950s), Chip (1960s–1970s), Personal (1970s–1980s), Web (1990s) and Always On (2000s) are implemented and connected by the Persistent Signal. Everywhere, Intelligence and the Finale are not built yet.
-
-Planned chapters: Intro, Machine, Chip, Personal, Web, Always On, Everywhere, Intelligence, Finale.
+Stage 06 — the full narrative. All nine chapters are implemented and connected by the Persistent Signal: Intro, Machine (1940s–1950s), Chip (1960s–1970s), Personal (1970s–1980s), Web (1990s), Always On (2000s), Everywhere (2010s), Intelligence (2020s) and the Finale. An integration and polish pass, the historical audit and the credits page are still to come.
 
 ## Tech stack
 
@@ -75,5 +73,6 @@ Direction: computational archaeology. A near-monochrome system of lines, points,
 - Elements revealed by a timeline carry `data-reveal`, and signal segments resolved by one carry `data-signal-pending`. CSS applies their starting state only when motion is allowed and scripting is enabled, so reduced-motion and no-JavaScript visitors get the final, static composition directly.
 - A signal path made of several segments is resolved with `resolveSignalChain` (`src/lib/motion/signal.ts`), which moves the head at a constant speed and shows one head at a time.
 - Web and Always On share one folder and one graph (`sections/network/`): on desktop the timeline merges the two sections into a single pinned stage, so the network built in the first keeps existing and changes behavior in the second. Traffic is a CSS dash animation that only runs while the stage is on screen.
+- Everywhere and Intelligence share a stage the same way (`sections/ambient/`). The Finale is not pinned.
 - Desktop chapters pin and scrub. Compact screens never pin: they scroll normally while the signal head rides a fixed viewport line (`COMPACT_SIGNAL_LINE`).
 - Scrolling is native. Lenis is not used.

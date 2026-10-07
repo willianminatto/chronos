@@ -130,12 +130,10 @@ interface NetworkGraphProps {
   id: string;
   /** Whether traffic is showing. The timeline may switch it on later. */
   flow: "on" | "off";
-  /** The signal ends in this graph, so its head stays visible. */
-  last?: boolean;
 }
 
 /** Decorative. One SVG: edges, traffic, nodes and the signal's route. */
-export function NetworkGraph({ id, flow, last = false }: NetworkGraphProps) {
+export function NetworkGraph({ id, flow }: NetworkGraphProps) {
   const clipId = `${id}-clip`;
 
   return (
@@ -143,7 +141,6 @@ export function NetworkGraph({ id, flow, last = false }: NetworkGraphProps) {
       data-network="graph"
       data-signal-pending
       data-flow={flow}
-      data-last={last ? "" : undefined}
       className="network-graph"
       viewBox={`0 0 ${DRAWING} ${DRAWING}`}
     >

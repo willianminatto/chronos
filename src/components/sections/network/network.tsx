@@ -424,7 +424,7 @@ export function Network() {
           </div>
         </div>
         <div aria-hidden className="network-figure">
-          <NetworkGraph id="always-on-network" flow="on" last />
+          <NetworkGraph id="always-on-network" flow="on" />
         </div>
       </section>
     </div>

@@ -1,0 +1,374 @@
+/*
+ * Global, unlayered styles for the Everywhere and Intelligence chapters,
+ * namespaced `ambient-`.
+ *
+ * By default they are two stacked sections, each a complete static
+ * composition. On desktop, when motion is allowed, the timeline merges them
+ * into one pinned stage (`data-stage="merged"`), the same way the Web and
+ * Always On share theirs.
+ */
+
+.ambient {
+  /* Where the frame hangs from, and where the signal later divides. */
+  --ambient-top: 3rem;
+  /* The three proportions of the frame: wide, medium and hand. */
+  --ambient-wide-w: 100%;
+  --ambient-wide-h: 56vw;
+  --ambient-medium-w: 76%;
+  --ambient-medium-h: 66vw;
+  --ambient-hand-w: 46%;
+  --ambient-hand-h: 80vw;
+  --ambient-fan-out: 5rem;
+  --ambient-fan-in: 4rem;
+
+  position: relative;
+}
+
+.ambient-era {
+  position: relative;
+  overflow: clip;
+}
+
+.ambient-labels {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+/* Text the signal passes behind sits on the canvas color. */
+.ambient-solid {
+  position: relative;
+  background-color: var(--chronos-bg);
+}
+
+/* Everywhere ------------------------------------------------------------ */
+
+.ambient-everywhere__text {
+  position: relative;
+  padding: 5rem var(--chronos-gutter) 2rem;
+}
+
+.ambient-everywhere__bottom {
+  display: grid;
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.ambient-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-inline: var(--chronos-gutter);
+}
+
+.ambient-entry {
+  height: var(--ambient-top);
+}
+
+.ambient-exit {
+  height: 4rem;
+}
+
+.ambient-stack {
+  position: relative;
+  width: 100%;
+  height: var(--ambient-hand-h);
+}
+
+.ambient-ghost,
+.ambient-frame {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% 0;
+}
+
+/* The proportions the frame has been through. */
+.ambient-ghost {
+  border: 1px dashed var(--chronos-line-strong);
+}
+
+.ambient-ghost--wide {
+  width: var(--ambient-wide-w);
+  height: var(--ambient-wide-h);
+}
+
+.ambient-ghost--medium {
+  width: var(--ambient-medium-w);
+  height: var(--ambient-medium-h);
+}
+
+.ambient-frame {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  width: var(--ambient-hand-w);
+  height: var(--ambient-hand-h);
+  border: 1px solid var(--chronos-line-strong);
+  background-color: var(--chronos-bg);
+}
+
+/* The signal as boundary: lights the border from the top center outward. */
+.ambient-frame__signal {
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--chronos-fg);
+  pointer-events: none;
+  clip-path: inset(
+    0 calc((1 - var(--signal-progress)) * 50%)
+      calc((1 - var(--signal-progress)) * 100%)
+  );
+}
+
+.ambient-frame__bar {
+  display: flex;
+  align-items: center;
+  height: 1.75rem;
+  padding-inline: 0.75rem;
+  border-bottom: 1px solid var(--chronos-line-strong);
+}
+
+.ambient-frame__bar::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--chronos-fg);
+}
+
+/* As many columns as fit: the content reflows as the frame changes shape. */
+.ambient-frame__blocks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(10.5rem, 100%), 1fr));
+  gap: 0.75rem;
+  min-height: 0;
+  padding: 1rem;
+}
+
+.ambient-block {
+  position: relative;
+  min-height: 1.25rem;
+  border: 1px solid var(--chronos-line-strong);
+}
+
+.ambient-block::before {
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 40%;
+  height: 2px;
+  background-color: var(--chronos-fg);
+}
+
+/* Timeline only: the point where the signal divides, and its way down. */
+.ambient-hub,
+.ambient-descent {
+  display: none;
+}
+
+/* Intelligence ---------------------------------------------------------- */
+
+.ambient-head {
+  position: relative;
+  padding: 5rem var(--chronos-gutter) 1.5rem;
+}
+
+.ambient-diamond {
+  padding-inline: var(--chronos-gutter);
+}
+
+/* The signal divides: straight lines in percentages, so they need no viewBox. */
+.ambient-fan {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.ambient-fan--out {
+  height: var(--ambient-fan-out);
+}
+
+.ambient-fan--in {
+  height: var(--ambient-fan-in);
+}
+
+.ambient-fan line {
+  stroke: var(--chronos-fg);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--signal-progress));
+}
+
+.ambient-tokens {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ambient-token {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+}
+
+.ambient-token::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--chronos-fg);
+  background-color: var(--chronos-bg);
+}
+
+.ambient-word > span {
+  display: inline-block;
+}
+
+.ambient-tail {
+  position: relative;
+  min-height: 8rem;
+  padding: 1.5rem var(--chronos-gutter) 4rem;
+}
+
+@media (min-width: 64rem) {
+  .ambient {
+    --ambient-top: 14svh;
+    --ambient-wide-w: min(76vw, 110svh);
+    --ambient-wide-h: 52svh;
+    --ambient-medium-w: 62svh;
+    --ambient-medium-h: 48svh;
+    --ambient-hand-w: 24svh;
+    --ambient-hand-h: 46svh;
+    --ambient-fan-out: 16svh;
+    --ambient-fan-in: 11svh;
+  }
+
+  .ambient-era {
+    height: 100svh;
+    min-height: 36rem;
+  }
+
+  .ambient-era--intelligence {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ambient-everywhere__text {
+    position: static;
+    padding: 0;
+  }
+
+  .ambient-everywhere__text > .ambient-labels {
+    position: absolute;
+    top: var(--chronos-gutter);
+    inset-inline: var(--chronos-gutter);
+  }
+
+  /* Copy above the title, both on the bottom edge and over the figure. */
+  .ambient-everywhere__bottom {
+    position: absolute;
+    z-index: 1;
+    bottom: var(--chronos-gutter);
+    inset-inline: var(--chronos-gutter);
+    gap: 0.75rem;
+    padding-top: 0;
+  }
+
+  .ambient-everywhere__bottom > :first-child {
+    order: 1;
+  }
+
+  .ambient-everywhere__bottom .ambient-solid {
+    background-color: transparent;
+  }
+
+  .ambient-figure {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding-inline: 0;
+  }
+
+  .ambient-entry,
+  .ambient-exit,
+  .ambient-descent {
+    position: absolute;
+    left: 50%;
+    translate: -50% 0;
+  }
+
+  .ambient-entry {
+    top: 0;
+  }
+
+  .ambient-exit {
+    top: calc(var(--ambient-top) + var(--ambient-hand-h));
+    bottom: 0;
+    height: auto;
+  }
+
+  .ambient-stack {
+    position: absolute;
+    top: var(--ambient-top);
+    inset-inline: 0;
+    width: auto;
+  }
+
+  .ambient-frame__blocks {
+    padding: 1.5rem;
+  }
+
+  .ambient-head {
+    flex: none;
+    height: var(--ambient-top);
+    padding: var(--chronos-gutter) var(--chronos-gutter) 0;
+  }
+
+  .ambient-tail {
+    flex: 1;
+    padding-bottom: var(--chronos-gutter);
+  }
+
+  .ambient-tail .ambient-solid {
+    max-width: 22rem;
+    background-color: transparent;
+  }
+
+  /* Merged stage ---------------------------------------------------------- */
+
+  .ambient[data-stage="merged"] {
+    height: 100svh;
+    min-height: 36rem;
+    overflow: clip;
+  }
+
+  .ambient[data-stage="merged"] .ambient-era {
+    position: absolute;
+    inset: 0;
+    height: auto;
+  }
+
+  /* One signal runs through the stage, so the per-section links go. */
+  .ambient[data-stage="merged"] .ambient-exit,
+  .ambient[data-stage="merged"] .ambient-head .signal-line,
+  .ambient[data-stage="merged"] .ambient-tail .signal-line {
+    display: none;
+  }
+
+  .ambient[data-stage="merged"] .ambient-hub {
+    position: absolute;
+    top: var(--ambient-top);
+    left: 50%;
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: var(--chronos-accent);
+    translate: -50% -50%;
+    visibility: hidden;
+  }
+
+  .ambient[data-stage="merged"] .ambient-descent {
+    top: var(--ambient-top);
+    bottom: 0;
+    display: block;
+    visibility: hidden;
+  }
+}

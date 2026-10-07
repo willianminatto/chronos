@@ -111,11 +111,6 @@
   opacity: calc((1 - var(--signal-progress)) * 100);
 }
 
-/* The last graph of the sequence keeps its head where the signal ends. */
-.network-graph[data-last] .network-head {
-  opacity: 1;
-}
-
 /* Traffic: short dashes that travel along an edge. Static until animated. */
 .network-flow {
   stroke: var(--chronos-fg);
@@ -177,8 +172,10 @@
   stroke-dashoffset: calc(1 - var(--network-exit));
 }
 
+/* Leaves once the next chapter takes over, like the route's own head. */
 .network-exit-head {
   offset-distance: calc(var(--network-exit) * 100%);
+  opacity: calc((1 - var(--network-exit)) * 100);
 }
 
 @media (max-width: 63.999rem) {

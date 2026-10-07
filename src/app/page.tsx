@@ -1,4 +1,6 @@
+import { Ambient } from "@/components/sections/ambient/ambient";
 import { Chip } from "@/components/sections/chip/chip";
+import { Finale } from "@/components/sections/finale/finale";
 import { Intro } from "@/components/sections/intro/intro";
 import { Machine } from "@/components/sections/machine/machine";
 import { Network } from "@/components/sections/network/network";
@@ -12,6 +14,8 @@ export default function Home() {
       <Chip />
       <Personal />
       <Network />
+      <Ambient />
+      <Finale />
     </main>
   );
 }
